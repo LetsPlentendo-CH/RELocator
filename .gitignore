@@ -1,0 +1,12 @@
+.vscode/
+profile_dis/
+other/
+*.bin
+*.elf
+*.rel
+*.rel.LZ
+*.plf
+log_profile.txt
+*.exe
+uncompLZ
+relocator
