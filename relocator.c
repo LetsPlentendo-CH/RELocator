@@ -361,11 +361,11 @@ void relocateRelFile(relFile *rel, int index) {
                         *(u32 *)(&thisRel->data[currRelocPointer]) = swap32(relocSymbol);
                         break;
                     case R_PPC_ADDR24:
-                        *(u32 *)(&thisRel->data[currRelocPointer]) &= swap32(0xFC000000);
-                        *(u32 *)(&thisRel->data[currRelocPointer]) |= swap32(((relocSymbol >> 2) << 2) & 0x3FFFFFF);
+                        *(u32 *)(&thisRel->data[currRelocPointer]) &= swap32(0xFC000003);
+                        *(u32 *)(&thisRel->data[currRelocPointer]) |= swap32(((relocSymbol >> 2) << 2) & 0x3FFFFFC);
                         break;
                     case R_PPC_ADDR16:
-                        if ((relocSymbol & 0xFF) == relocSymbol) break;
+                        if (relocSymbol >> 16 != 0) break;
                         *(u16 *)(&thisRel->data[currRelocPointer]) = swap16(relocSymbol);
                         break;
                     case R_PPC_ADDR16_LO:
@@ -381,14 +381,11 @@ void relocateRelFile(relFile *rel, int index) {
                     case R_PPC_ADDR14:
                     case R_PPC_ADDR14_BRTAKEN:
                     case R_PPC_ADDR14_BRNTAKEN:
-                        *(u32 *)(&thisRel->data[currRelocPointer]) = swap32(((relocSymbol >> 2) << 2) & 0x3FFF);
+                        *(u32 *)(&thisRel->data[currRelocPointer]) &= swap32(0xFFFF0003);
+                        *(u32 *)(&thisRel->data[currRelocPointer]) = swap32(((relocSymbol >> 2) << 2) & 0xFFFC);
                         break;
                     case R_PPC_REL24:
                         valToWrite = ((relocSymbol - (thisRelocStart + currRelocPointer)) >> 2) << 2;
-                        /*if ((valToWrite & 0x3FFFFFC) != valToWrite) {
-                            
-                            break;
-                        }*/
                         *(u32 *)(&thisRel->data[currRelocPointer]) &= swap32(0xFC000003);
                         *(u32 *)(&thisRel->data[currRelocPointer]) |= swap32(valToWrite & 0x3FFFFFC);
                         break;
@@ -396,12 +393,8 @@ void relocateRelFile(relFile *rel, int index) {
                     case R_PPC_REL14_BRTAKEN:
                     case R_PPC_REL14_BRNTAKEN:
                         valToWrite = ((thisRelocStart + currRelocPointer - relocSymbol) >> 2) << 2;
-                        /*if ((valToWrite & 0x3FFC) != valToWrite) {
-                            printf("0x%08x + 0x%08x - 0x%08x\n", thisRelocStart, currRelocPointer, relocSymbol);
-                            break;
-                        }*/
-                        *(u32 *)(&thisRel->data[currRelocPointer]) &= swap32(0xFFFFC003);
-                        *(u32 *)(&thisRel->data[currRelocPointer]) = swap32(valToWrite & 0x3FFC);
+                        *(u32 *)(&thisRel->data[currRelocPointer]) &= swap32(0xFFFF0003);
+                        *(u32 *)(&thisRel->data[currRelocPointer]) = swap32(valToWrite & 0xFFFC);
                         break;
                     default:
                         printf("unknown relocation type %d\n", currReloc.type);
